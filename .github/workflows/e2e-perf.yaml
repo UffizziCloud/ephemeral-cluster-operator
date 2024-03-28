@@ -47,6 +47,12 @@ jobs:
           ref: ${{ github.head_ref }}
           path: .github
 
+      - name: Checkout hack from PR
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          path: hack
+
       # Identify comment to be updated
       - name: Find comment for Performance Overview
         uses: peter-evans/find-comment@v2
