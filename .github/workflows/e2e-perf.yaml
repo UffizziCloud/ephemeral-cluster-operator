@@ -41,67 +41,102 @@ jobs:
         with:
           ref: ${{ matrix.git_branch == 'main' && 'main' || github.head_ref }}
 
-      - name: install yq
-        run: sudo snap install yq
+#      - name: install yq
+#        run: sudo snap install yq
+#
+#      - name: Download Helm Values Artifact
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: helm-values
+#
+#      - name: Start Minikube
+#        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
+#
+#      - name: Install Uffizzi Cluster Operator
+#        id: prev
+#        run: |
+#          helm dep update ./chart
+#          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
+#          ./chart -f helm-values.yaml
+#
+#      # Identify comment to be updated
+#      - name: Find comment for Performance Overview
+#        uses: peter-evans/find-comment@v2
+#        id: find-comment
+#        with:
+#          issue-number: ${{ github.event.pull_request.number }}
+#          comment-author: "github-actions[bot]"
+#          body-includes: Performance Overview
+#          direction: last
+#
+#      # Create/Update comment with action deployment status
+#      - name: Create or Update Comment with Performance Overview
+#        id: notification
+#        uses: peter-evans/create-or-update-comment@v2
+#        with:
+#          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+#          issue-number: ${{ github.event.pull_request.number }}
+#          body: |
+#            ## Operator Performance Overview
+#
+#            :gear: Running performance tests on Minikube
+#
+#          edit-mode: replace
+#
+#      - name: Create PERF_DATA_FILE
+#        run: |
+#          # Ensure the file exists and initialize it as an empty array if not
+#          if [ ! -f "$PERF_DATA_FILE" ]; then
+#            echo '[]' > "$PERF_DATA_FILE"
+#          fi
+#
+#      - name: Time taken to create UffizziClusters with different numbers of workers
+#        run: |
+#          for n_workers in $(seq 1 5 30); do
+#
+#            yq -i '.concurrent = "$n_workers"' helm-values.yaml
+#            n_simultaneous_clusters=3
+#
+#            # time taken to create n clusters simultaneously
+#            time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
+#            bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $PERF_DATA_FILE
+#
+#          done
 
-      - name: Download Helm Values Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: helm-values
-
-      - name: Start Minikube
-        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
-
-      - name: Install Uffizzi Cluster Operator
-        id: prev
-        run: |
-          helm dep update ./chart
-          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
-          ./chart -f helm-values.yaml
-
-      # Identify comment to be updated
-      - name: Find comment for Performance Overview
-        uses: peter-evans/find-comment@v2
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: Performance Overview
-          direction: last
-
-      # Create/Update comment with action deployment status
-      - name: Create or Update Comment with Performance Overview
-        id: notification
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## Operator Performance Overview
-
-            :gear: Running performance tests on Minikube
-
-          edit-mode: replace
-
-      - name: Create PERF_DATA_FILE
-        run: |
-          # Ensure the file exists and initialize it as an empty array if not
-          if [ ! -f "$PERF_DATA_FILE" ]; then
-            echo '[]' > "$PERF_DATA_FILE"
-          fi
-
-      - name: Time taken to create UffizziClusters with different numbers of workers
-        run: |
-          for n_workers in $(seq 1 5 30); do
-          
-            yq -i '.concurrent = "$n_workers"' helm-values.yaml
-            n_simultaneous_clusters=3
-          
-            # time taken to create n clusters simultaneously
-            time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
-            bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $PERF_DATA_FILE
-          
-          done
+      - name: dummy data
+        run: | 
+            echo '[
+                {"workers": 1, "time": 10},
+                {"workers": 2, "time": 20},
+                {"workers": 3, "time": 30},
+                {"workers": 4, "time": 40},
+                {"workers": 5, "time": 50},
+                {"workers": 6, "time": 60},
+                {"workers": 7, "time": 70},
+                {"workers": 8, "time": 80},
+                {"workers": 9, "time": 90},
+                {"workers": 10, "time": 100},
+                {"workers": 11, "time": 110},
+                {"workers": 12, "time": 120},
+                {"workers": 13, "time": 130},
+                {"workers": 14, "time": 140},
+                {"workers": 15, "time": 150},
+                {"workers": 16, "time": 160},
+                {"workers": 17, "time": 170},
+                {"workers": 18, "time": 180},
+                {"workers": 19, "time": 190},
+                {"workers": 20, "time": 200},
+                {"workers": 21, "time": 210},
+                {"workers": 22, "time": 220},
+                {"workers": 23, "time": 230},
+                {"workers": 24, "time": 240},
+                {"workers": 25, "time": 250},
+                {"workers": 26, "time": 260},
+                {"workers": 27, "time": 270},
+                {"workers": 28, "time": 280},
+                {"workers": 29, "time": 290},
+                {"workers": 30, "time": 300}
+            ]' > $PERF_DATA_FILE
           
       - name: Rename and update PERF_DATA_FILE
         run: |
@@ -124,13 +159,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download all artifacts
+      - name: Download artifact
         uses: actions/download-artifact@v2
+        with:
+          name: perf-data-PR
 
       - name: Unzip artifacts
         run: |
           ls
-          unzip perf-data-PR
+          cat perf-data-PR.json
+#          unzip perf-data-PR
 
       - name: Set up Python
         uses: actions/setup-python@v2
