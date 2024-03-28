@@ -36,10 +36,16 @@ jobs:
           - main
           - PR
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v3
         with:
           ref: ${{ matrix.git_branch == 'main' && 'main' || github.head_ref }}
+
+      - name: Checkout .github from PR
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          path: .github
 
       # Identify comment to be updated
       - name: Find comment for Performance Overview
