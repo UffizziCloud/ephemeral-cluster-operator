@@ -20,14 +20,14 @@ permissions:
   id-token: write
 
 jobs:
-  build-operator:
-    uses: ./.github/workflows/build-operator.yaml
-    name: Build Operator Image
-    secrets: inherit
+#  build-operator:
+#    uses: ./.github/workflows/build-operator.yaml
+#    name: Build Operator Image
+#    secrets: inherit
 
   perf-test-minikube:
-    needs:
-    - build-operator
+#    needs:
+#    - build-operator
     name: Run Performance Tests on Minikube
     runs-on: ubuntu-latest
     strategy:
@@ -52,6 +52,9 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           path: hack
+
+      - name: List contents of the hack directory
+        run: ls -R hack/
 
       # Identify comment to be updated
       - name: Find comment for Performance Overview
