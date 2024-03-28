@@ -11,7 +11,7 @@ on:
       - closed
 
 env:
-  PERF_DATA_FILE: perf_data.json
+  PERF_DATA_FILE: perf-data.json
   E2E_UTILS: ./hack/e2e/perf/scripts/utils.sh
 
 permissions:
