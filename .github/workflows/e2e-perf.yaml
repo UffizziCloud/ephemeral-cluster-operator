@@ -25,14 +25,21 @@ jobs:
     name: Build Operator Image
     secrets: inherit
 
-  minikube:
+  perf-test-minikube:
     needs:
     - build-operator
     name: Run Performance Tests on Minikube
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        git_branch:
+          - main
+          - PR
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.git_branch == 'main' && 'main' || github.head_ref }}
 
       - name: install yq
         run: sudo snap install yq
@@ -94,8 +101,16 @@ jobs:
             time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
             bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $PERF_DATA_FILE
           
-            cat data.json
+            cat $PERF_DATA_FILE
           done
+          
+          mv $PERF_DATA_FILE "$PERF_DATA_FILE-${{ matrix.git_branch }}"
+
+      - name: Upload PERF_DATA_FILE artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: perf-data-${{ matrix.git_branch }}
+          path: $PERF_DATA_FILE
 #
 #      - name: Set concurrent to 10
 #        uses: mikefarah/yq@master
@@ -111,6 +126,17 @@ jobs:
 #          jq --argjson newEntry "{\"workers\": 10, \"time\": $time}" '. += [$newEntry]' "$JSON_FILE" > "tmp.$$" && mv "tmp.$$" "$JSON_FILE"
 #
 #          cat data.json
+  performance-overview:
+    name: Collate performance data and post overview
+    needs:
+      - perf-test-minikube
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+
+      - name: list
+        run: ls
 
       - name: Set up Python
         uses: actions/setup-python@v2
