@@ -129,6 +129,7 @@ jobs:
 
       - name: Unzip artifacts
         run: |
+          ls
           unzip perf-data-PR
 
       - name: Set up Python
