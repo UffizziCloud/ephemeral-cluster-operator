@@ -65,87 +65,84 @@ jobs:
 
           edit-mode: replace
 
-#      - name: install yq
-#        run: sudo snap install yq
-#
-#      - name: Download Helm Values Artifact
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: helm-values
-#
-#      - name: Start Minikube
-#        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
-#
-#      - name: Install Uffizzi Cluster Operator
-#        id: prev
-#        run: |
-#          helm dep update ./chart
-#          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
-#          ./chart -f helm-values.yaml
-#
-#
+      - name: install yq
+        run: sudo snap install yq
 
-#
-#      - name: Create PERF_DATA_FILE
-#        run: |
-#          # Ensure the file exists and initialize it as an empty array if not
-#          if [ ! -f "$PERF_DATA_FILE" ]; then
-#            echo '[]' > "$PERF_DATA_FILE"
-#          fi
-#
-#      - name: Time taken to create UffizziClusters with different numbers of workers
-#        run: |
-#          for n_workers in $(seq 1 5 30); do
-#
-#            yq -i '.concurrent = "$n_workers"' helm-values.yaml
-#            n_simultaneous_clusters=3
-#
-#            # time taken to create n clusters simultaneously
-#            time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
-#            bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $PERF_DATA_FILE
-#
-#          done
+      - name: Download Helm Values Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: helm-values
 
-      - name: dummy data
-        shell: bash
+      - name: Start Minikube
+        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
+
+      - name: Install Uffizzi Cluster Operator
+        id: prev
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            factor=2
-          else
-            factor=1
+          helm dep update ./chart
+          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
+          ./chart -f helm-values.yaml
+
+      - name: Create PERF_DATA_FILE
+        run: |
+          # Ensure the file exists and initialize it as an empty array if not
+          if [ ! -f "$PERF_DATA_FILE" ]; then
+            echo '[]' > "$PERF_DATA_FILE"
           fi
-          echo '[
-            {"workers": 1, "time": '$((10 * factor))'},
-            {"workers": 2, "time": '$((20 * factor))'},
-            {"workers": 3, "time": '$((30 * factor))'},
-            {"workers": 4, "time": '$((40 * factor))'},
-            {"workers": 5, "time": '$((50 * factor))'},
-            {"workers": 6, "time": '$((60 * factor))'},
-            {"workers": 7, "time": '$((70 * factor))'},
-            {"workers": 8, "time": '$((80 * factor))'},
-            {"workers": 9, "time": '$((90 * factor))'},
-            {"workers": 10, "time": '$((100 * factor))'},
-            {"workers": 11, "time": '$((110 * factor))'},
-            {"workers": 12, "time": '$((120 * factor))'},
-            {"workers": 13, "time": '$((130 * factor))'},
-            {"workers": 14, "time": '$((140 * factor))'},
-            {"workers": 15, "time": '$((150 * factor))'},
-            {"workers": 16, "time": '$((160 * factor))'},
-            {"workers": 17, "time": '$((170 * factor))'},
-            {"workers": 18, "time": '$((180 * factor))'},
-            {"workers": 19, "time": '$((190 * factor))'},
-            {"workers": 20, "time": '$((200 * factor))'},
-            {"workers": 21, "time": '$((210 * factor))'},
-            {"workers": 22, "time": '$((220 * factor))'},
-            {"workers": 23, "time": '$((230 * factor))'},
-            {"workers": 24, "time": '$((240 * factor))'},
-            {"workers": 25, "time": '$((250 * factor))'},
-            {"workers": 26, "time": '$((260 * factor))'},
-            {"workers": 27, "time": '$((270 * factor))'},
-            {"workers": 28, "time": '$((280 * factor))'},
-            {"workers": 29, "time": '$((290 * factor))'},
-            {"workers": 30, "time": '$((300 * factor))'}
-           ]' > $PERF_DATA_FILE
+
+      - name: Time taken to create UffizziClusters with different numbers of workers
+        run: |
+          for n_workers in $(seq 1 5 30); do
+
+            yq -i '.concurrent = "$n_workers"' helm-values.yaml
+            n_simultaneous_clusters=3
+
+            # time taken to create n clusters simultaneously
+            time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
+            bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $PERF_DATA_FILE
+
+          done
+
+#      - name: dummy data
+#        shell: bash
+#        run: |
+#          if [[ "${{ github.ref_name }}" == "main" ]]; then
+#            factor=2
+#          else
+#            factor=1
+#          fi
+#          echo '[
+#            {"workers": 1, "time": '$((10 * factor))'},
+#            {"workers": 2, "time": '$((20 * factor))'},
+#            {"workers": 3, "time": '$((30 * factor))'},
+#            {"workers": 4, "time": '$((40 * factor))'},
+#            {"workers": 5, "time": '$((50 * factor))'},
+#            {"workers": 6, "time": '$((60 * factor))'},
+#            {"workers": 7, "time": '$((70 * factor))'},
+#            {"workers": 8, "time": '$((80 * factor))'},
+#            {"workers": 9, "time": '$((90 * factor))'},
+#            {"workers": 10, "time": '$((100 * factor))'},
+#            {"workers": 11, "time": '$((110 * factor))'},
+#            {"workers": 12, "time": '$((120 * factor))'},
+#            {"workers": 13, "time": '$((130 * factor))'},
+#            {"workers": 14, "time": '$((140 * factor))'},
+#            {"workers": 15, "time": '$((150 * factor))'},
+#            {"workers": 16, "time": '$((160 * factor))'},
+#            {"workers": 17, "time": '$((170 * factor))'},
+#            {"workers": 18, "time": '$((180 * factor))'},
+#            {"workers": 19, "time": '$((190 * factor))'},
+#            {"workers": 20, "time": '$((200 * factor))'},
+#            {"workers": 21, "time": '$((210 * factor))'},
+#            {"workers": 22, "time": '$((220 * factor))'},
+#            {"workers": 23, "time": '$((230 * factor))'},
+#            {"workers": 24, "time": '$((240 * factor))'},
+#            {"workers": 25, "time": '$((250 * factor))'},
+#            {"workers": 26, "time": '$((260 * factor))'},
+#            {"workers": 27, "time": '$((270 * factor))'},
+#            {"workers": 28, "time": '$((280 * factor))'},
+#            {"workers": 29, "time": '$((290 * factor))'},
+#            {"workers": 30, "time": '$((300 * factor))'}
+#           ]' > $PERF_DATA_FILE
           
       - name: Rename and update PERF_DATA_FILE
         run: |
