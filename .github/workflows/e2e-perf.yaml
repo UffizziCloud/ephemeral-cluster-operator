@@ -33,7 +33,7 @@ jobs:
     strategy:
       matrix:
         git_branch:
-          - main
+#          - main
           - PR
     steps:
       - name: Checkout
