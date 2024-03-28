@@ -41,6 +41,30 @@ jobs:
         with:
           ref: ${{ matrix.git_branch == 'main' && 'main' || github.head_ref }}
 
+      # Identify comment to be updated
+      - name: Find comment for Performance Overview
+        uses: peter-evans/find-comment@v2
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: Performance Overview
+          direction: last
+
+      # Create/Update comment with action deployment status
+      - name: Create or Update Comment with Performance Overview
+        id: notification
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Operator Performance Overview
+
+            :gear: Running performance tests on Minikube
+
+          edit-mode: replace
+
 #      - name: install yq
 #        run: sudo snap install yq
 #
@@ -59,29 +83,8 @@ jobs:
 #          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
 #          ./chart -f helm-values.yaml
 #
-#      # Identify comment to be updated
-#      - name: Find comment for Performance Overview
-#        uses: peter-evans/find-comment@v2
-#        id: find-comment
-#        with:
-#          issue-number: ${{ github.event.pull_request.number }}
-#          comment-author: "github-actions[bot]"
-#          body-includes: Performance Overview
-#          direction: last
 #
-#      # Create/Update comment with action deployment status
-#      - name: Create or Update Comment with Performance Overview
-#        id: notification
-#        uses: peter-evans/create-or-update-comment@v2
-#        with:
-#          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-#          issue-number: ${{ github.event.pull_request.number }}
-#          body: |
-#            ## Operator Performance Overview
-#
-#            :gear: Running performance tests on Minikube
-#
-#          edit-mode: replace
+
 #
 #      - name: Create PERF_DATA_FILE
 #        run: |
@@ -159,6 +162,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # Identify comment to be updated
+      - name: Find comment for Performance Overview
+        uses: peter-evans/find-comment@v2
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: Performance Overview
+          direction: last
+
       - name: Download perf data - PR
         uses: actions/download-artifact@v2
         with:
@@ -182,17 +195,17 @@ jobs:
       - name: Create Graph
         run: python hack/e2e/perf/viz/generate_graph.py
 
-      - name: Upload to Imgur
+      - name: Upload the simultaneous cluster creation test image to Imgur
         id: upload_image
         uses: devicons/public-upload-to-imgur@v2.2.2
         with:
-          path: ./performance_graph.png
+          path: ./simul_graph.png
           client_id: ${{ secrets.IMGUR_CLIENT_ID }}
 
       - name: Update Comment with Performance Overview
         uses: peter-evans/create-or-update-comment@v2
         with:
-          comment-id: ${{ steps.notification.outputs.comment-id }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## Operator Performance Overview
