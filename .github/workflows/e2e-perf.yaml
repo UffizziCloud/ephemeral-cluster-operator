@@ -110,7 +110,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: perf-data-${{ matrix.git_branch }}
-          path: $PERF_DATA_FILE
+          path: $PERF_DATA_FILE-${{ matrix.git_branch }}
 #
 #      - name: Set concurrent to 10
 #        uses: mikefarah/yq@master
