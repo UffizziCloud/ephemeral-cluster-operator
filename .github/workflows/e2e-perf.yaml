@@ -41,20 +41,15 @@ jobs:
         with:
           ref: ${{ matrix.git_branch == 'main' && 'main' || github.head_ref }}
 
-      - name: Checkout .github from PR
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-          path: .github
-
       - name: Checkout hack from PR
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-          path: hack
+          path: pr
 
-      - name: List contents of the hack directory
-        run: ls -R hack/
+      - name: List contents
+        run: |
+          ls -R ./
 
       # Identify comment to be updated
       - name: Find comment for Performance Overview
