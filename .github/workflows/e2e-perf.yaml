@@ -20,14 +20,14 @@ permissions:
   id-token: write
 
 jobs:
-#  build-operator:
-#    uses: ./.github/workflows/build-operator.yaml
-#    name: Build Operator Image
-#    secrets: inherit
+  build-operator:
+    uses: ./.github/workflows/build-operator.yaml
+    name: Build Operator Image
+    secrets: inherit
 
   perf-test-minikube:
-#    needs:
-#    - build-operator
+    needs:
+    - build-operator
     name: Run Performance Tests on Minikube
     runs-on: ubuntu-latest
     strategy:
@@ -50,10 +50,10 @@ jobs:
       - name: Copy hack outside of pr-temp
         run: cp -r pr-temp/hack/* hack
 
-      - name: List contents
-        run: |
-          rm -rf pr-temp
-          ls -R ./
+#      - name: List contents
+#        run: |
+#          rm -rf pr-temp
+#          ls -R ./
 
       # Identify comment to be updated
       - name: Find comment for Performance Overview
@@ -126,35 +126,11 @@ jobs:
 #            factor=1
 #          fi
 #          echo '[
-#            {"workers": 1, "time": '$((10 * factor))'},
-#            {"workers": 2, "time": '$((20 * factor))'},
-#            {"workers": 3, "time": '$((30 * factor))'},
-#            {"workers": 4, "time": '$((40 * factor))'},
 #            {"workers": 5, "time": '$((50 * factor))'},
-#            {"workers": 6, "time": '$((60 * factor))'},
-#            {"workers": 7, "time": '$((70 * factor))'},
-#            {"workers": 8, "time": '$((80 * factor))'},
-#            {"workers": 9, "time": '$((90 * factor))'},
 #            {"workers": 10, "time": '$((100 * factor))'},
-#            {"workers": 11, "time": '$((110 * factor))'},
-#            {"workers": 12, "time": '$((120 * factor))'},
-#            {"workers": 13, "time": '$((130 * factor))'},
-#            {"workers": 14, "time": '$((140 * factor))'},
 #            {"workers": 15, "time": '$((150 * factor))'},
-#            {"workers": 16, "time": '$((160 * factor))'},
-#            {"workers": 17, "time": '$((170 * factor))'},
-#            {"workers": 18, "time": '$((180 * factor))'},
-#            {"workers": 19, "time": '$((190 * factor))'},
 #            {"workers": 20, "time": '$((200 * factor))'},
-#            {"workers": 21, "time": '$((210 * factor))'},
-#            {"workers": 22, "time": '$((220 * factor))'},
-#            {"workers": 23, "time": '$((230 * factor))'},
-#            {"workers": 24, "time": '$((240 * factor))'},
 #            {"workers": 25, "time": '$((250 * factor))'},
-#            {"workers": 26, "time": '$((260 * factor))'},
-#            {"workers": 27, "time": '$((270 * factor))'},
-#            {"workers": 28, "time": '$((280 * factor))'},
-#            {"workers": 29, "time": '$((290 * factor))'},
 #            {"workers": 30, "time": '$((300 * factor))'}
 #           ]' > $PERF_DATA_FILE
           
