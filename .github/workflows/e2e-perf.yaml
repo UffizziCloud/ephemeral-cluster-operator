@@ -92,7 +92,7 @@ jobs:
 
       - name: Time taken to create UffizziClusters with different numbers of workers
         run: |
-          for n_workers in $(seq 0 5 30); do
+          for n_workers in $(seq 1 5 30); do
           
             yq -i '.concurrent = "$n_workers"' helm-values.yaml
             n_simultaneous_clusters=3
