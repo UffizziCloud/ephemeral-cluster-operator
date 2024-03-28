@@ -48,7 +48,7 @@ jobs:
           path: pr-temp
 
       - name: Copy hack outside of pr-temp
-        run: cp -r pr-temp/hack hack
+        run: cp -r pr-temp/hack/* hack
 
       - name: List contents
         run: |
