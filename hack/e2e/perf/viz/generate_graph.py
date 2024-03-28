@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import json
 
 # Load the data from 'data.json'
-with open('data.json', 'r') as file:
+with open('perf-data-PR.json', 'r') as file:
     data = json.load(file)
 
 # Extract 'workers' and 'time' into separate lists
