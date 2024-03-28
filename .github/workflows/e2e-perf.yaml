@@ -33,7 +33,7 @@ jobs:
     strategy:
       matrix:
         git_branch:
-#          - main
+          - main
           - PR
     steps:
       - name: Checkout
@@ -159,16 +159,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download artifact
+      - name: Download perf data - PR
         uses: actions/download-artifact@v2
         with:
           name: perf-data-PR
 
-      - name: Unzip artifacts
-        run: |
-          ls
-          cat perf-data-PR.json
-#          unzip perf-data-PR
+      - name: Download perf data - main
+        uses: actions/download-artifact@v2
+        with:
+          name: perf-data-main
 
       - name: Set up Python
         uses: actions/setup-python@v2
