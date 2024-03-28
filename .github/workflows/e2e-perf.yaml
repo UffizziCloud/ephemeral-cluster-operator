@@ -110,22 +110,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: perf-data-${{ matrix.git_branch }}
-          path: $PERF_DATA_FILE-${{ matrix.git_branch }}
-#
-#      - name: Set concurrent to 10
-#        uses: mikefarah/yq@master
-#        with:
-#          cmd: yq -i '.concurrent = "10"' helm-values.yaml
-#
-#      - name: Time taken to create UffizziClusters with 10 workers
-#        run: |
-#          JSON_FILE="data.json"
-#          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
-#          ./chart -f helm-values.yaml
-#          time=$(bash hack/e2e/perf/01-multicluster.sh)
-#          jq --argjson newEntry "{\"workers\": 10, \"time\": $time}" '. += [$newEntry]' "$JSON_FILE" > "tmp.$$" && mv "tmp.$$" "$JSON_FILE"
-#
-#          cat data.json
+          path: ${{ env.PERF_DATA_FILE }}-${{ matrix.git_branch }}
+
   performance-overview:
     name: Collate performance data and post overview
     needs:
