@@ -43,9 +43,9 @@ plt.xticks(workers_pr_sorted)
 plt.yticks(sorted(set(time_pr_sorted + time_main_sorted)))  # Combine and sort unique time values
 
 # Add title, labels, grid, and legend
-plt.title('Performance Comparison: PR vs Main Branch')
-plt.xlabel('Number of Workers (n_simultaneous_clusters='+n_simul_clusters+')')
-plt.ylabel('Time Taken (seconds)')
+plt.title('multicluster readiness comparison: PR vs Main Branch')
+plt.xlabel('number of workers (n_simultaneous_clusters='+n_simul_clusters+')')
+plt.ylabel('time taken for readiness (seconds)')
 plt.grid(True)
 plt.legend()
 
