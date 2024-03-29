@@ -12,7 +12,7 @@ on:
 
 env:
   N_SIMUL_PERF_DATA_FILE: n-simul-perf-data.json
-  COLD_START_PERF_DATA_FILE: cold-start.txt
+  COLD_START_PERF_DATA_FILE: cold-start-perf-data.txt
   E2E_UTILS: ./hack/e2e/perf/scripts/utils.sh
 
 permissions:
@@ -159,8 +159,14 @@ jobs:
       - name: Upload N_SIMUL_PERF_DATA_FILE artifact
         uses: actions/upload-artifact@v2
         with:
-          name: perf-data-${{ matrix.git_branch }}
+          name: n-simul-perf-data-${{ matrix.git_branch }}
           path: ${{ env.N_SIMUL_PERF_DATA_FILE }}
+
+      - name: Upload COLD_START_PERF_DATA_FILE artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: cold-start-perf-data-${{ matrix.git_branch }}
+          path: ${{ env.COLD_START_PERF_DATA_FILE }}
 
   performance-overview:
     name: Collate performance data and post overview
@@ -181,15 +187,25 @@ jobs:
           body-includes: Performance Overview
           direction: last
 
-      - name: Download perf data - PR
+      - name: Download n-simul-perf-data-PR
         uses: actions/download-artifact@v2
         with:
-          name: perf-data-PR
+          name: n-simul-perf-data-PR
 
-      - name: Download perf data - main
+      - name: Download n-simul-perf-data-main
         uses: actions/download-artifact@v2
         with:
-          name: perf-data-main
+          name: n-simul-perf-data-main
+
+      - name: Download cold-start-perf-data-PR
+        uses: actions/download-artifact@v2
+        with:
+          name: cold-start-perf-data-PR
+
+      - name: Download cold-start-perf-data-main
+        uses: actions/download-artifact@v2
+        with:
+          name: cold-start-perf-data-main
 
       - name: Set up Python
         uses: actions/setup-python@v2

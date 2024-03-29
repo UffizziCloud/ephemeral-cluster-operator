@@ -1,8 +1,12 @@
 import matplotlib.pyplot as plt
 
-# Cold start performance data in seconds
-cold_start_main = 120  # Replace with actual cold start time for the main branch
-cold_start_pr = 150  # Replace with actual cold start time for the PR branch
+# Read cold start performance time from 'cold-start-main.txt'
+with open('cold-start-perf-data-main.txt', 'r') as file:
+    cold_start_main = int(file.read().strip())
+
+# Read cold start performance time from 'cold-start-PR.txt'
+with open('cold-start-perf-data-PR.txt', 'r') as file:
+    cold_start_pr = int(file.read().strip())
 
 # Branch names
 branches = ['Main Branch', 'PR Branch']
