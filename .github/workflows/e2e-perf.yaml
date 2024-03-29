@@ -190,8 +190,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install matplotlib
 
-      - name: Create Graph
+      - name: Create n simultaneous cluster creation graph
         run: python hack/e2e/perf/viz/generate_n_simul_graph.py
+
+      - name: Create cold start cluster creation graph
+        run: python hack/e2e/perf/viz/generate_cold_start_graph.py
 
       - name: Upload the simultaneous cluster creation test image to Imgur
         id: upload_image
@@ -208,14 +211,14 @@ jobs:
           body: |
             ## Operator Performance Overview
             
-            ### Cold Start Performance Test
+            ### cold start - initial cluster creation
             
             This test would assess the duration and efficiency of initializing the first cluster, 
             which typically takes longer due to initial setup tasks such as pulling images and configuring the 
             environment. The test aims to capture the performance impact of these one-time operations to understand 
             the startup behavior and identify potential areas for optimization.
             
-            ### Simultaneous cluster creation
+            ### n(=3) simultaneous cluster creation
             
             Creating simultaneously to check if operator is able to manage the load of creating multiple clusters
             at once. Creating multiple clusters simultaneously, in operator deployments; of varying number of concurrent

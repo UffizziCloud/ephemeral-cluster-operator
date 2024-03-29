@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import json
 
+data_file_prefix = 'perf-data-'
+
 # Load the data from 'perf-data-PR.json'
-with open('perf-data-PR.json', 'r') as file:
+with open(data_file_prefix+'PR.json', 'r') as file:
     data_pr = json.load(file)
 
 # Load the data from 'perf-data-main.json'
-with open('perf-data-main.json', 'r') as file:
+with open(data_file_prefix+'main.json', 'r') as file:
     data_main = json.load(file)
 
 # Convert 'time' values to integers and extract 'workers' and 'time' into separate lists for PR data
