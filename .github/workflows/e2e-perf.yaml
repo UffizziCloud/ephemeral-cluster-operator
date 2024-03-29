@@ -282,7 +282,7 @@ jobs:
             
             ![cold start cluster creation](${{ fromJSON(steps.upload_cold_start_image.outputs.imgur_urls)[0] }})
             
-            ### n(=3) simultaneous cluster creation
+            ### n(=${{ env.N_SIMUL_CLUSTERS }}) simultaneous cluster creation
             
             Creating simultaneously to check if operator is able to manage the load of creating multiple clusters
             at once. Creating multiple clusters simultaneously, in operator deployments; of varying number of concurrent
