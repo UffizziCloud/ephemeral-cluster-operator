@@ -224,10 +224,17 @@ jobs:
         run: python hack/e2e/perf/viz/generate_cold_start_graph.py
 
       - name: Upload the simultaneous cluster creation test image to Imgur
-        id: upload_image
+        id: upload_simul_image
         uses: devicons/public-upload-to-imgur@v2.2.2
         with:
           path: ./simul_graph.png
+          client_id: ${{ secrets.IMGUR_CLIENT_ID }}
+
+      - name: Upload the cold start cluster creation test image to Imgur
+        id: upload_cold_start_image
+        uses: devicons/public-upload-to-imgur@v2.2.2
+        with:
+          path: ./cold_start_graph.png
           client_id: ${{ secrets.IMGUR_CLIENT_ID }}
 
       - name: Update Comment with Performance Overview
@@ -245,11 +252,13 @@ jobs:
             environment. The test aims to capture the performance impact of these one-time operations to understand 
             the startup behavior and identify potential areas for optimization.
             
+            ![cold start cluster creation](${{ fromJSON(steps.upload_cold_start_image.outputs.imgur_urls)[0] }})
+            
             ### n(=3) simultaneous cluster creation
             
             Creating simultaneously to check if operator is able to manage the load of creating multiple clusters
             at once. Creating multiple clusters simultaneously, in operator deployments; of varying number of concurrent
             workers help us understand how the operator manages high load in restricted environments as well.
             
-            ![Graph](${{ fromJSON(steps.upload_image.outputs.imgur_urls)[0] }})
+            ![n simultaneous cluster creation](${{ fromJSON(steps.upload_simul_image.outputs.imgur_urls)[0] }})
           edit-mode: replace
