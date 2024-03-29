@@ -14,6 +14,7 @@ env:
   N_SIMUL_PERF_DATA_FILE: n-simul-perf-data.json
   COLD_START_PERF_DATA_FILE: cold-start-perf-data.txt
   E2E_UTILS: ./hack/e2e/perf/scripts/utils.sh
+  N_SIMUL_CLUSTERS: 3
 
 permissions:
   contents: write
@@ -91,6 +92,13 @@ jobs:
       - name: Start Minikube
         run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
 
+      - name: Minikube Configuration and Resources
+        run: |
+          minikube config view
+          kubectl describe nodes
+          kubectl get storageclass
+
+
 #      - name: Install Uffizzi Cluster Operator
 #        id: prev
 #        run: |
@@ -121,7 +129,7 @@ jobs:
       - name: Rename and update COLD_START_PERF_DATA_FILE
         run: |
           NEW_NAME="${COLD_START_PERF_DATA_FILE%.txt}-${{ matrix.git_branch }}.txt"
-          mv COLD_START_PERF_DATA_FILE $NEW_NAME
+          mv $COLD_START_PERF_DATA_FILE $NEW_NAME
           echo "COLD_START_PERF_DATA_FILE=$NEW_NAME" >> $GITHUB_ENV          
 
       - name: Create N_SIMUL_PERF_DATA_FILE
