@@ -52,11 +52,6 @@ jobs:
       - name: Copy hack outside of pr-temp
         run: cp -r pr-temp/hack/* hack
 
-#      - name: List contents
-#        run: |
-#          rm -rf pr-temp
-#          ls -R ./
-
       # Identify comment to be updated
       - name: Find comment for Performance Overview
         uses: peter-evans/find-comment@v2
@@ -84,6 +79,7 @@ jobs:
       - name: install yq
         run: sudo snap install yq
 
+## > comment to test with dummy data
 #      - name: Download Helm Values Artifact
 #        uses: actions/download-artifact@v3
 #        with:
@@ -104,6 +100,7 @@ jobs:
 #          helm dep update ./chart
 #          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
 #          ./chart -f helm-values.yaml
+## < comment to test with dummy data
 
       - name: Create COLD_START_PERF_DATA_FILE
         run: |
@@ -112,10 +109,13 @@ jobs:
             touch "$COLD_START_PERF_DATA_FILE"
           fi
 
+## > comment to test with dummy data
 #      - name: Time taken to create a cluster on cold start
 #        run: |
 #          bash hack/e2e/perf/01-multicluster.sh 1 > $COLD_START_PERF_DATA_FILE
+## < comment to test with dummy data
 
+## > uncomment to test with dummy data
       - name: dummy data
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
@@ -124,6 +124,7 @@ jobs:
             factor=1
           fi
           echo $factor > $COLD_START_PERF_DATA_FILE
+## < comment to test with dummy data
 
       - name: Rename and update COLD_START_PERF_DATA_FILE
         run: |
@@ -138,6 +139,7 @@ jobs:
             echo '[]' > "$N_SIMUL_PERF_DATA_FILE"
           fi
 
+## > comment to test with dummy data
 #      - name: Time taken to create UffizziClusters with different numbers of workers
 #        run: |
 #          n_simultaneous_clusters=3
@@ -155,7 +157,9 @@ jobs:
 #          done
 #
 #          cat $N_SIMUL_PERF_DATA_FILE
+## < comment to test with dummy data
 
+## > uncomment to test with dummy data
       - name: dummy data
         shell: bash
         run: |
@@ -171,7 +175,8 @@ jobs:
             {"workers": 20, "time": '$((200 * factor))'},
             {"workers": 25, "time": '$((250 * factor))'},
             {"workers": 30, "time": '$((300 * factor))'}
-           ]' > $PERF_DATA_FILE
+           ]' > $N_SIMUL_PERF_DATA_FILE
+## > uncomment to test with dummy data
           
       - name: Rename and update N_SIMUL_PERF_DATA_FILE
         run: |
