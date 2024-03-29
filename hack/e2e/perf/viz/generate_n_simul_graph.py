@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import json
+import os
 
 data_file_prefix = 'n-simul-perf-data-'
+n_simul_clusters = os.environ.get('N_SIMUL_CLUSTERS')
 
 # Load the data from 'perf-data-PR.json'
 with open(data_file_prefix+'PR.json', 'r') as file:
@@ -42,7 +44,7 @@ plt.yticks(sorted(set(time_pr_sorted + time_main_sorted)))  # Combine and sort u
 
 # Add title, labels, grid, and legend
 plt.title('Performance Comparison: PR vs Main Branch')
-plt.xlabel('Number of Workers (n_simultaneous_clusters=3')
+plt.xlabel('Number of Workers (n_simultaneous_clusters='+n_simul_clusters)
 plt.ylabel('Time Taken (seconds)')
 plt.grid(True)
 plt.legend()
