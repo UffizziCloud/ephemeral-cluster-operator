@@ -34,6 +34,10 @@ plt.plot(workers_pr_sorted, time_pr_sorted, marker='o', linestyle='-', label='PR
 # Plot sorted data from 'perf-data-main.json'
 plt.plot(workers_main_sorted, time_main_sorted, marker='x', linestyle='--', label='Main Branch')
 
+# Set the tick marks to show each worker number
+plt.xticks(workers_pr_sorted)
+plt.yticks(sorted(set(time_pr_sorted + time_main_sorted)))  # Combine and sort unique time values
+
 # Add title, labels, grid, and legend
 plt.title('Performance Comparison: PR vs Main Branch')
 plt.xlabel('Number of Workers')
