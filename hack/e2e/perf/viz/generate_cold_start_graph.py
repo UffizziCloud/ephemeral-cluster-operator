@@ -11,7 +11,7 @@ with open(data_file_prefix+'PR.txt', 'r') as file:
     cold_start_pr = int(file.read().strip())
 
 # Branch names
-branches = ['Main Branch', 'PR Branch']
+branches = ['main', 'PR']
 
 # Performance times
 performance_times = [cold_start_main, cold_start_pr]
@@ -24,12 +24,14 @@ plt.bar(branches, performance_times, color=['blue', 'orange'])
 plt.grid(True, linestyle='--', which='both', axis='y', alpha=0.7)
 
 # Set the y-axis ticks to align with the actual values
-plt.yticks(range(0, max(performance_times) + 10, 10))
+plt.yticks(range(0, max(performance_times) + 10, 5))
 
 # Add title and labels
 plt.title('Cold Start Performance Comparison : PR vs Main Branch')
 plt.xlabel('Branch')
 plt.ylabel('Time Taken (seconds)')
+plt.grid(True)
+plt.legend()
 
 # Show the plot
 
