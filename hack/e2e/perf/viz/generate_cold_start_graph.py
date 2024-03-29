@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
 
+data_file_prefix = 'cold-start-perf-data-'
+
 # Read cold start performance time from 'cold-start-main.txt'
-with open('cold-start-perf-data-main.txt', 'r') as file:
+with open(data_file_prefix+'main.txt', 'r') as file:
     cold_start_main = int(file.read().strip())
 
 # Read cold start performance time from 'cold-start-PR.txt'
-with open('cold-start-perf-data-PR.txt', 'r') as file:
+with open(data_file_prefix+'PR.txt', 'r') as file:
     cold_start_pr = int(file.read().strip())
 
 # Branch names

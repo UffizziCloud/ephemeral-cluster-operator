@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import json
 
-data_file_prefix = 'perf-data-'
+data_file_prefix = 'n-simul-perf-data-'
 
 # Load the data from 'perf-data-PR.json'
 with open(data_file_prefix+'PR.json', 'r') as file:
