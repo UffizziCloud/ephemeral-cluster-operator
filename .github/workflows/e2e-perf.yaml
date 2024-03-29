@@ -116,7 +116,7 @@ jobs:
           else
             factor=1
           fi
-          $factor > $COLD_START_PERF_DATA_FILE
+          echo $factor > $COLD_START_PERF_DATA_FILE
 
       - name: Rename and update COLD_START_PERF_DATA_FILE
         run: |
