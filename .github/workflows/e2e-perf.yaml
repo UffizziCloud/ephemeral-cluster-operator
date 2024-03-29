@@ -149,7 +149,7 @@ jobs:
 
             # upgrade helm chart
             helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
-            ./chart -f helm-values.yaml
+            ./chart -f helm-values.yaml > /dev/null
 
             # time taken to create n clusters simultaneously
             time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
