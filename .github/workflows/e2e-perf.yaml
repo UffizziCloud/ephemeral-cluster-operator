@@ -28,7 +28,7 @@ jobs:
   perf-test-minikube:
     needs:
     - build-operator
-    name: Run Performance Tests on Minikube
+    name: Performance Test - Minikube
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -116,6 +116,8 @@ jobs:
             bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $PERF_DATA_FILE
 
           done
+          
+          cat $PERF_DATA_FILE
 
 #      - name: dummy data
 #        shell: bash
