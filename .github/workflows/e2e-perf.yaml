@@ -1,0 +1,291 @@
+name: Test - E2E - Performance # e2e tests running against a k8s cluster
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+env:
+  N_SIMUL_PERF_DATA_FILE: n-simul-perf-data.json
+  COLD_START_PERF_DATA_FILE: cold-start-perf-data.txt
+  E2E_UTILS: ./hack/e2e/perf/scripts/utils.sh
+  N_SIMUL_CLUSTERS: 7
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  build-operator:
+    uses: ./.github/workflows/build-operator.yaml
+    name: Build Operator Image
+    secrets: inherit
+
+  perf-test-minikube:
+    needs:
+    - build-operator
+    name: Performance Test - Minikube
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        git_branch:
+          - main
+          - PR
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.git_branch == 'main' && 'main' || github.head_ref }}
+
+      - name: Checkout hack from PR
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          path: pr-temp
+
+      - name: Copy hack outside of pr-temp
+        run: cp -r pr-temp/hack/* hack
+
+      # Identify comment to be updated
+      - name: Find comment for Performance Overview
+        uses: peter-evans/find-comment@v2
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: Performance Overview
+          direction: last
+
+      # Create/Update comment with action deployment status
+      - name: Create or Update Comment with Performance Overview
+        id: notification
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Operator Performance Overview
+
+            :gear: Running performance tests on Minikube
+
+          edit-mode: replace
+
+      - name: install yq
+        run: sudo snap install yq
+
+## > comment to test with dummy data
+      - name: Download Helm Values Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: helm-values
+
+      - name: Start Minikube
+        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker --cpus 4 --memory 8192
+
+      - name: Minikube Configuration and Resources
+        run: |
+          minikube config view
+          kubectl describe nodes
+          kubectl get storageclass
+
+      - name: Install Uffizzi Cluster Operator
+        id: prev
+        run: |
+          helm dep update ./chart
+          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
+          ./chart -f helm-values.yaml
+## < comment to test with dummy data
+
+      - name: Create COLD_START_PERF_DATA_FILE
+        run: |
+          # Ensure the file exists and initialize it as an empty array if not
+          if [ ! -f "$COLD_START_PERF_DATA_FILE" ]; then
+            touch "$COLD_START_PERF_DATA_FILE"
+          fi
+
+## > comment to test with dummy data
+      - name: Time taken to create a cluster on cold start
+        run: |
+          bash hack/e2e/perf/01-multicluster.sh 1 > $COLD_START_PERF_DATA_FILE
+## < comment to test with dummy data
+
+## > uncomment to test with dummy data
+#      - name: dummy data
+#        run: |
+#          if [[ "${{ github.ref_name }}" == "main" ]]; then
+#            factor=2
+#          else
+#            factor=1
+#          fi
+#          echo $factor > $COLD_START_PERF_DATA_FILE
+## < comment to test with dummy data
+
+      - name: Rename and update COLD_START_PERF_DATA_FILE
+        run: |
+          NEW_NAME="${COLD_START_PERF_DATA_FILE%.txt}-${{ matrix.git_branch }}.txt"
+          mv $COLD_START_PERF_DATA_FILE $NEW_NAME
+          echo "COLD_START_PERF_DATA_FILE=$NEW_NAME" >> $GITHUB_ENV          
+
+      - name: Create N_SIMUL_PERF_DATA_FILE
+        run: |
+          # Ensure the file exists and initialize it as an empty array if not
+          if [ ! -f "$N_SIMUL_PERF_DATA_FILE" ]; then
+            echo '[]' > "$N_SIMUL_PERF_DATA_FILE"
+          fi
+
+## > comment to test with dummy data
+      - name: Time taken to create UffizziClusters with different numbers of workers
+        run: |
+          n_simultaneous_clusters=$N_SIMUL_CLUSTERS
+          for n_workers in $(seq 1 5 31); do
+            # update concurrent workers
+            yq -i '.concurrent = "$n_workers"' helm-values.yaml
+
+            # upgrade helm chart
+            helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
+            ./chart -f helm-values.yaml > /dev/null
+
+            # time taken to create n clusters simultaneously
+            time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
+            bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $N_SIMUL_PERF_DATA_FILE
+          done
+
+          cat $N_SIMUL_PERF_DATA_FILE
+## < comment to test with dummy data
+
+## > uncomment to test with dummy data
+#      - name: dummy data
+#        shell: bash
+#        run: |
+#          if [[ "${{ github.ref_name }}" == "main" ]]; then
+#            factor=2
+#          else
+#            factor=1
+#          fi
+#          echo '[
+#            {"workers": 5, "time": '$((50 * factor))'},
+#            {"workers": 10, "time": '$((100 * factor))'},
+#            {"workers": 15, "time": '$((150 * factor))'},
+#            {"workers": 20, "time": '$((200 * factor))'},
+#            {"workers": 25, "time": '$((250 * factor))'},
+#            {"workers": 30, "time": '$((300 * factor))'}
+#           ]' > $N_SIMUL_PERF_DATA_FILE
+## < uncomment to test with dummy data
+          
+      - name: Rename and update N_SIMUL_PERF_DATA_FILE
+        run: |
+          NEW_NAME="${N_SIMUL_PERF_DATA_FILE%.json}-${{ matrix.git_branch }}.json"
+          mv $N_SIMUL_PERF_DATA_FILE $NEW_NAME
+          echo "N_SIMUL_PERF_DATA_FILE=$NEW_NAME" >> $GITHUB_ENV
+
+      - name: Upload N_SIMUL_PERF_DATA_FILE artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: n-simul-perf-data-${{ matrix.git_branch }}
+          path: ${{ env.N_SIMUL_PERF_DATA_FILE }}
+
+      - name: Upload COLD_START_PERF_DATA_FILE artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: cold-start-perf-data-${{ matrix.git_branch }}
+          path: ${{ env.COLD_START_PERF_DATA_FILE }}
+
+  performance-overview:
+    name: Collate performance data and post overview
+    needs:
+      - perf-test-minikube
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Identify comment to be updated
+      - name: Find comment for Performance Overview
+        uses: peter-evans/find-comment@v2
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: Performance Overview
+          direction: last
+
+      - name: Download n-simul-perf-data-PR
+        uses: actions/download-artifact@v2
+        with:
+          name: n-simul-perf-data-PR
+
+      - name: Download n-simul-perf-data-main
+        uses: actions/download-artifact@v2
+        with:
+          name: n-simul-perf-data-main
+
+      - name: Download cold-start-perf-data-PR
+        uses: actions/download-artifact@v2
+        with:
+          name: cold-start-perf-data-PR
+
+      - name: Download cold-start-perf-data-main
+        uses: actions/download-artifact@v2
+        with:
+          name: cold-start-perf-data-main
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install matplotlib
+
+      - name: Create n simultaneous cluster creation graph
+        run: python hack/e2e/perf/viz/generate_n_simul_graph.py
+
+      - name: Create cold start cluster creation graph
+        run: python hack/e2e/perf/viz/generate_cold_start_graph.py
+
+      - name: Upload the simultaneous cluster creation test image to Imgur
+        id: upload_simul_image
+        uses: devicons/public-upload-to-imgur@v2.2.2
+        with:
+          path: ./simul_graph.png
+          client_id: ${{ secrets.IMGUR_CLIENT_ID }}
+
+      - name: Upload the cold start cluster creation test image to Imgur
+        id: upload_cold_start_image
+        uses: devicons/public-upload-to-imgur@v2.2.2
+        with:
+          path: ./cold_start_graph.png
+          client_id: ${{ secrets.IMGUR_CLIENT_ID }}
+
+      - name: Update Comment with Performance Overview
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Operator Performance Overview
+            
+            ### cold start - initial cluster creation
+            
+            This test would assess the duration and efficiency of initializing the first cluster, 
+            which typically takes longer due to initial setup tasks such as pulling images and configuring the 
+            environment. The test aims to capture the performance impact of these one-time operations to understand 
+            the startup behavior and identify potential areas for optimization.
+            
+            ![cold start cluster creation](${{ fromJSON(steps.upload_cold_start_image.outputs.imgur_urls)[0] }})
+            
+            ### n(=${{ env.N_SIMUL_CLUSTERS }}) simultaneous cluster creation
+            
+            This test is creating multiple clusters simultaneously in operator deployments of varying number of concurrent
+            workers to help us understand how the operator manages high load in restricted environments.
+            
+            ![n simultaneous cluster creation](${{ fromJSON(steps.upload_simul_image.outputs.imgur_urls)[0] }})
+          edit-mode: replace
