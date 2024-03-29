@@ -9,13 +9,13 @@ with open('perf-data-PR.json', 'r') as file:
 with open('perf-data-main.json', 'r') as file:
     data_main = json.load(file)
 
-# Extract 'workers' and 'time' into separate lists for PR data
+# Convert 'time' values to integers and extract 'workers' and 'time' into separate lists for PR data
 workers_pr = [item['workers'] for item in data_pr]
-time_pr = [item['time'] for item in data_pr]
+time_pr = [int(item['time']) for item in data_pr]
 
-# Extract 'workers' and 'time' into separate lists for main data
+# Convert 'time' values to integers and extract 'workers' and 'time' into separate lists for main data
 workers_main = [item['workers'] for item in data_main]
-time_main = [item['time'] for item in data_main]
+time_main = [int(item['time']) for item in data_main]
 
 # Sort the data by workers to ensure correct plotting order
 sorted_pr = sorted(zip(workers_pr, time_pr), key=lambda x: x[0])
@@ -35,11 +35,12 @@ plt.plot(workers_pr_sorted, time_pr_sorted, marker='o', linestyle='-', label='PR
 plt.plot(workers_main_sorted, time_main_sorted, marker='x', linestyle='--', label='Main Branch')
 
 # Add title, labels, grid, and legend
-plt.title('Time Taken by UffizziClusters with Varying Workers')
+plt.title('Performance Comparison: PR vs Main Branch')
 plt.xlabel('Number of Workers')
-plt.ylabel('Time')
+plt.ylabel('Time Taken (seconds)')
 plt.grid(True)
 plt.legend()
 
-# Save the plot as an image file
+# Display the plot
 plt.savefig('simul_graph.png')
+# plt.show()
