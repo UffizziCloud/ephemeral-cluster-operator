@@ -22,14 +22,14 @@ permissions:
   id-token: write
 
 jobs:
-#  build-operator:
-#    uses: ./.github/workflows/build-operator.yaml
-#    name: Build Operator Image
-#    secrets: inherit
+  build-operator:
+    uses: ./.github/workflows/build-operator.yaml
+    name: Build Operator Image
+    secrets: inherit
 
   perf-test-minikube:
-#    needs:
-#    - build-operator
+    needs:
+    - build-operator
     name: Performance Test - Minikube
     runs-on: ubuntu-latest
     strategy:
@@ -80,26 +80,26 @@ jobs:
         run: sudo snap install yq
 
 ## > comment to test with dummy data
-#      - name: Download Helm Values Artifact
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: helm-values
+      - name: Download Helm Values Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: helm-values
 
-#      - name: Start Minikube
-#        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
-#
-#      - name: Minikube Configuration and Resources
-#        run: |
-#          minikube config view
-#          kubectl describe nodes
-#          kubectl get storageclass
+      - name: Start Minikube
+        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker --cpus 4 --memory 8192
 
-#      - name: Install Uffizzi Cluster Operator
-#        id: prev
-#        run: |
-#          helm dep update ./chart
-#          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
-#          ./chart -f helm-values.yaml
+      - name: Minikube Configuration and Resources
+        run: |
+          minikube config view
+          kubectl describe nodes
+          kubectl get storageclass
+
+      - name: Install Uffizzi Cluster Operator
+        id: prev
+        run: |
+          helm dep update ./chart
+          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
+          ./chart -f helm-values.yaml
 ## < comment to test with dummy data
 
       - name: Create COLD_START_PERF_DATA_FILE
@@ -110,20 +110,20 @@ jobs:
           fi
 
 ## > comment to test with dummy data
-#      - name: Time taken to create a cluster on cold start
-#        run: |
-#          bash hack/e2e/perf/01-multicluster.sh 1 > $COLD_START_PERF_DATA_FILE
+      - name: Time taken to create a cluster on cold start
+        run: |
+          bash hack/e2e/perf/01-multicluster.sh 1 > $COLD_START_PERF_DATA_FILE
 ## < comment to test with dummy data
 
 ## > uncomment to test with dummy data
-      - name: dummy data
-        run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            factor=2
-          else
-            factor=1
-          fi
-          echo $factor > $COLD_START_PERF_DATA_FILE
+#      - name: dummy data
+#        run: |
+#          if [[ "${{ github.ref_name }}" == "main" ]]; then
+#            factor=2
+#          else
+#            factor=1
+#          fi
+#          echo $factor > $COLD_START_PERF_DATA_FILE
 ## < comment to test with dummy data
 
       - name: Rename and update COLD_START_PERF_DATA_FILE
@@ -140,43 +140,43 @@ jobs:
           fi
 
 ## > comment to test with dummy data
-#      - name: Time taken to create UffizziClusters with different numbers of workers
-#        run: |
-#          n_simultaneous_clusters=3
-#          for n_workers in $(seq 1 5 31); do
-#            # update concurrent workers
-#            yq -i '.concurrent = "$n_workers"' helm-values.yaml
-#
-#            # upgrade helm chart
-#            helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
-#            ./chart -f helm-values.yaml
-#
-#            # time taken to create n clusters simultaneously
-#            time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
-#            bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $N_SIMUL_PERF_DATA_FILE
-#          done
-#
-#          cat $N_SIMUL_PERF_DATA_FILE
+      - name: Time taken to create UffizziClusters with different numbers of workers
+        run: |
+          n_simultaneous_clusters=3
+          for n_workers in $(seq 1 5 31); do
+            # update concurrent workers
+            yq -i '.concurrent = "$n_workers"' helm-values.yaml
+
+            # upgrade helm chart
+            helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
+            ./chart -f helm-values.yaml
+
+            # time taken to create n clusters simultaneously
+            time=$(bash hack/e2e/perf/01-multicluster.sh $n_simultaneous_clusters)
+            bash $E2E_UTILS update_json_with_workers_and_time $n_workers $time $N_SIMUL_PERF_DATA_FILE
+          done
+
+          cat $N_SIMUL_PERF_DATA_FILE
 ## < comment to test with dummy data
 
 ## > uncomment to test with dummy data
-      - name: dummy data
-        shell: bash
-        run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            factor=2
-          else
-            factor=1
-          fi
-          echo '[
-            {"workers": 5, "time": '$((50 * factor))'},
-            {"workers": 10, "time": '$((100 * factor))'},
-            {"workers": 15, "time": '$((150 * factor))'},
-            {"workers": 20, "time": '$((200 * factor))'},
-            {"workers": 25, "time": '$((250 * factor))'},
-            {"workers": 30, "time": '$((300 * factor))'}
-           ]' > $N_SIMUL_PERF_DATA_FILE
-## > uncomment to test with dummy data
+#      - name: dummy data
+#        shell: bash
+#        run: |
+#          if [[ "${{ github.ref_name }}" == "main" ]]; then
+#            factor=2
+#          else
+#            factor=1
+#          fi
+#          echo '[
+#            {"workers": 5, "time": '$((50 * factor))'},
+#            {"workers": 10, "time": '$((100 * factor))'},
+#            {"workers": 15, "time": '$((150 * factor))'},
+#            {"workers": 20, "time": '$((200 * factor))'},
+#            {"workers": 25, "time": '$((250 * factor))'},
+#            {"workers": 30, "time": '$((300 * factor))'}
+#           ]' > $N_SIMUL_PERF_DATA_FILE
+## < uncomment to test with dummy data
           
       - name: Rename and update N_SIMUL_PERF_DATA_FILE
         run: |
