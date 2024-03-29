@@ -89,15 +89,14 @@ jobs:
 #        with:
 #          name: helm-values
 
-      - name: Start Minikube
-        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
-
-      - name: Minikube Configuration and Resources
-        run: |
-          minikube config view
-          kubectl describe nodes
-          kubectl get storageclass
-
+#      - name: Start Minikube
+#        run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
+#
+#      - name: Minikube Configuration and Resources
+#        run: |
+#          minikube config view
+#          kubectl describe nodes
+#          kubectl get storageclass
 
 #      - name: Install Uffizzi Cluster Operator
 #        id: prev
