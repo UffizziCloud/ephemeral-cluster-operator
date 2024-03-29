@@ -21,14 +21,14 @@ permissions:
   id-token: write
 
 jobs:
-  build-operator:
-    uses: ./.github/workflows/build-operator.yaml
-    name: Build Operator Image
-    secrets: inherit
+#  build-operator:
+#    uses: ./.github/workflows/build-operator.yaml
+#    name: Build Operator Image
+#    secrets: inherit
 
   perf-test-minikube:
-    needs:
-    - build-operator
+#    needs:
+#    - build-operator
     name: Performance Test - Minikube
     runs-on: ubuntu-latest
     strategy:
@@ -83,26 +83,26 @@ jobs:
       - name: install yq
         run: sudo snap install yq
 
-      - name: Download Helm Values Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: helm-values
+#      - name: Download Helm Values Artifact
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: helm-values
 
       - name: Start Minikube
         run: minikube start --addons default-storageclass,storage-provisioner --driver=docker
 
-      - name: Install Uffizzi Cluster Operator
-        id: prev
-        run: |
-          helm dep update ./chart
-          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
-          ./chart -f helm-values.yaml
+#      - name: Install Uffizzi Cluster Operator
+#        id: prev
+#        run: |
+#          helm dep update ./chart
+#          helm upgrade --install --wait pr-${{ github.event.pull_request.number }} \
+#          ./chart -f helm-values.yaml
 
       - name: Create COLD_START_PERF_DATA_FILE
         run: |
           # Ensure the file exists and initialize it as an empty array if not
           if [ ! -f "$COLD_START_PERF_DATA_FILE" ]; then
-            echo '[]' > "$COLD_START_PERF_DATA_FILE"
+            touch "$COLD_START_PERF_DATA_FILE"
           fi
 
 #      - name: Time taken to create a cluster on cold start
