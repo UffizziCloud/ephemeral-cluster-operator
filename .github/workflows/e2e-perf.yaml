@@ -11,7 +11,7 @@ on:
       - closed
 
 env:
-  PERF_DATA_FILE: perf-data.json
+  N_SIMUL_PERF_DATA_FILE: n-simul-perf-data.json
   E2E_UTILS: ./hack/e2e/perf/scripts/utils.sh
 
 permissions:
@@ -191,7 +191,7 @@ jobs:
           pip install matplotlib
 
       - name: Create Graph
-        run: python hack/e2e/perf/viz/generate_graph.py
+        run: python hack/e2e/perf/viz/generate_n_simul_graph.py
 
       - name: Upload the simultaneous cluster creation test image to Imgur
         id: upload_image
@@ -207,6 +207,13 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## Operator Performance Overview
+            
+            ### Cold Start Performance Test
+            
+            This test would assess the duration and efficiency of initializing the first cluster, 
+            which typically takes longer due to initial setup tasks such as pulling images and configuring the 
+            environment. The test aims to capture the performance impact of these one-time operations to understand 
+            the startup behavior and identify potential areas for optimization.
             
             ### Simultaneous cluster creation
             
