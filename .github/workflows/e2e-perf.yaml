@@ -14,7 +14,7 @@ env:
   N_SIMUL_PERF_DATA_FILE: n-simul-perf-data.json
   COLD_START_PERF_DATA_FILE: cold-start-perf-data.txt
   E2E_UTILS: ./hack/e2e/perf/scripts/utils.sh
-  N_SIMUL_CLUSTERS: 5
+  N_SIMUL_CLUSTERS: 6
 
 permissions:
   contents: write
