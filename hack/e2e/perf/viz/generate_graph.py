@@ -40,7 +40,7 @@ plt.yticks(sorted(set(time_pr_sorted + time_main_sorted)))  # Combine and sort u
 
 # Add title, labels, grid, and legend
 plt.title('Performance Comparison: PR vs Main Branch')
-plt.xlabel('Number of Workers')
+plt.xlabel('Number of Workers (n_simultaneous_clusters=3')
 plt.ylabel('Time Taken (seconds)')
 plt.grid(True)
 plt.legend()
