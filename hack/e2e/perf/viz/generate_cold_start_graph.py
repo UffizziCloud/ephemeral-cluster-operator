@@ -27,9 +27,9 @@ plt.grid(True, linestyle='--', which='both', axis='y', alpha=0.7)
 plt.yticks(range(0, max(performance_times) + 10, 5))
 
 # Add title and labels
-plt.title('Cold Start Performance Comparison : PR vs Main Branch')
-plt.xlabel('Branch')
-plt.ylabel('Time Taken (seconds)')
+plt.title('cold start readiness comparison : PR vs Main Branch')
+plt.xlabel('branch')
+plt.ylabel('time taken for readiness (seconds)')
 plt.grid(True)
 plt.legend()
 

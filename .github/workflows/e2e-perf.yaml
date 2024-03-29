@@ -284,9 +284,8 @@ jobs:
             
             ### n(=${{ env.N_SIMUL_CLUSTERS }}) simultaneous cluster creation
             
-            Creating simultaneously to check if operator is able to manage the load of creating multiple clusters
-            at once. Creating multiple clusters simultaneously, in operator deployments; of varying number of concurrent
-            workers help us understand how the operator manages high load in restricted environments as well.
+            This test is creating multiple clusters simultaneously in operator deployments of varying number of concurrent
+            workers to help us understand how the operator manages high load in restricted environments.
             
             ![n simultaneous cluster creation](${{ fromJSON(steps.upload_simul_image.outputs.imgur_urls)[0] }})
           edit-mode: replace
