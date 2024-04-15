@@ -78,7 +78,8 @@ func (r *UffizziClusterReconciler) newHelmRelease(uCluster *uclusteruffizzicomv1
 		chartName = constants.VCLUSTER_CHART_K8S
 		chartVersion = constants.VCLUSTER_CHART_K8S_VERSION
 	} else if vclusterDistro == constants.VCLUSTER_EKS_DISTRO {
-
+		chartName = constants.VCLUSTER_CHART_EKS
+		chartVersion = constants.VCLUSTER_CHART_EKS_VERSION
 	}
 
 	// Create a new HelmRelease
