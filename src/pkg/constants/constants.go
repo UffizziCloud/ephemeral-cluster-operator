@@ -20,19 +20,14 @@ const (
 	VCLUSTER_K3S_DISTRO         = "k3s"
 	VCLUSTER_K8S_DISTRO         = "k8s"
 	VCLUSTER_EKS_DISTRO         = "eks"
-	NODESELECTOR_GKE            = "gvisor"
 	K3S_DATASTORE_ENDPOINT      = "K3S_DATASTORE_ENDPOINT"
 	VCLUSTER_INGRESS_HOSTNAME   = "VCLUSTER_INGRESS_HOST"
 	DEFAULT_K3S_VERSION         = "rancher/k3s:v1.27.3-k3s1"
 	UCLUSTER_SYNC_PLUGIN_TAG    = "uffizzi/ucluster-sync-plugin:v0.2.4"
 	OCI_TYPE                    = "oci"
-	PREMIUM_RWO_STORAGE_CLASS   = "premium-rwo"
 	STANDARD_STORAGE_CLASS      = "standard"
-	SANDBOX_GKE_IO_RUNTIME      = "sandbox.gke.io/runtime"
 	GVISOR                      = "gvisor"
 	VCLUSTER_MANAGED_BY_KEY     = "vcluster.loft.sh/managed-by"
-	WORKLOAD_TYPE_DEPLOYMENT    = "deployment"
-	WORKLOAD_TYPE_STATEFULSET   = "statefulset"
 )
 
 type LIFECYCLE_OP_TYPE string
