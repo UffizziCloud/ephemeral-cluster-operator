@@ -10,8 +10,8 @@ Welcome to the Uffizzi Cluster Operator, a Kubernetes operator designed to simpl
 - [Installation](#installation)
     - [Using Helm](#using-helm)
 - [Usage](#usage)
-    - [Creating a Virtual Cluster](#creating-a-virtual-cluster)
-    - [Configuring Ingress](#configuring-ingress)
+    - [Creating a Uffizzi Cluster](#creating-a-uffizzi-cluster)
+      - [Configuring the `UffzziCluster` Custom Resource](#configuring-the-uffzzi-cluster-custom-resource)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -21,7 +21,7 @@ The Uffizzi Cluster Operator is designed to facilitate the creation of virtual c
 
 ## Features
 
-- **Virtual Cluster Creation**: Automate the creation of virtual clusters with custom configurations.
+- **Uffizzi Cluster Creation**: Automate the creation of virtual clusters with custom configurations.
 - **Ingress Configuration**: Expose Ingress for the virtual cluster. Ingresses created inside a UffizziCluster are automatically exposed through the host cluster. 
 - **Resource Management**: Configure resource quotas, limit ranges, and other Kubernetes resources for the virtual cluster.
 - **Sleep Mode**: Suspend the virtual cluster if it is not being used for a certain period, optimizing resource usage.
