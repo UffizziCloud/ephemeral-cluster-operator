@@ -1,4 +1,4 @@
-# Uffizzi Cluster Operator README
+# Uffizzi Cluster Operator
 
 Welcome to the Uffizzi Cluster Operator, a Kubernetes operator designed to simplify the creation and management of fully managed virtual clusters. This operator leverages the power of Kubernetes Custom Resource Definitions (CRDs) to extend the Kubernetes API, enabling users to easily provision and configure virtual clusters with custom settings.
 
