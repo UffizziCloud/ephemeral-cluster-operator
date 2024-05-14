@@ -4,7 +4,7 @@ metadata:
   labels: {{ include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/component: manager
     app.kubernetes.io/part-of: uffizzi
-  name: {{ include "common.names.fullname" . | trunc 55 | trimSuffix "-" }}-metrics
+  name: {{ include "common.names.fullname" . | trunc 55 | trimSuffix "-" }}-http-metrics
   namespace: {{ .Release.Namespace | quote }}
 spec:
   ports:
