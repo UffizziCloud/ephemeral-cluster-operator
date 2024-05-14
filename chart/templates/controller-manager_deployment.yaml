@@ -66,6 +66,10 @@ spec:
         command:
         - /manager
         image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
         livenessProbe:
           httpGet:
             path: /healthz
