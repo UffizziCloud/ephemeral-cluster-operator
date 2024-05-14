@@ -1,3 +1,6 @@
+// ucluster_lifecycle_test contains helper functions which are used
+// for testing the lifecycle of the UffizziCluster resource.
+
 package e2e
 
 import (
