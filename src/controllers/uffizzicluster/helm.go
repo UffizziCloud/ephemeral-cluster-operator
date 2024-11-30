@@ -10,6 +10,7 @@ import (
 	fluxhelmv2beta1 "github.com/fluxcd/helm-controller/api/v2beta1"
 	fluxsourcev1 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/pkg/errors"
+	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -26,43 +27,17 @@ func (r *UffizziClusterReconciler) deleteLoftHelmRepo(ctx context.Context, req c
 	return r.deleteHelmRepo(ctx, constants.LOFT_HELM_REPO, req.Namespace)
 }
 
-func (r *UffizziClusterReconciler) upsertVClusterK3SHelmRelease(update bool, ctx context.Context, uCluster *uclusteruffizzicomv1alpha1.UffizziCluster) (*fluxhelmv2beta1.HelmRelease, error) {
+func (r *UffizziClusterReconciler) upsertVClusterHelmRelease(update bool, ctx context.Context, uCluster *uclusteruffizzicomv1alpha1.UffizziCluster) (*fluxhelmv2beta1.HelmRelease, error) {
 	patch := client.MergeFrom(uCluster.DeepCopy())
 
-	vclusterK3sHelmValues, helmReleaseName := vcluster.BuildK3SHelmValues(uCluster)
-	helmValuesJSONObj, err := build.HelmValuesToJSON(vclusterK3sHelmValues)
+	vclusterHelmValues, helmReleaseName := vcluster.BuildK3SHelmValues(uCluster)
+	helmValuesJSONObj, err := build.HelmValuesToJSON(vclusterHelmValues)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal helm values")
 	}
 
 	// Create a new HelmRelease
-	newHelmRelease := &fluxhelmv2beta1.HelmRelease{
-		ObjectMeta: ctrl.ObjectMeta{
-			Name:      helmReleaseName,
-			Namespace: uCluster.Namespace,
-			Labels: map[string]string{
-				constants.UFFIZZI_APP_COMPONENT_LABEL: constants.VCLUSTER,
-			},
-		},
-		Spec: fluxhelmv2beta1.HelmReleaseSpec{
-			Upgrade: &fluxhelmv2beta1.Upgrade{
-				Force: false,
-			},
-			Chart: fluxhelmv2beta1.HelmChartTemplate{
-				Spec: fluxhelmv2beta1.HelmChartTemplateSpec{
-					Chart:   constants.VCLUSTER_CHART_K3S,
-					Version: constants.VCLUSTER_CHART_K3S_VERSION,
-					SourceRef: fluxhelmv2beta1.CrossNamespaceObjectReference{
-						Kind:      "HelmRepository",
-						Name:      constants.LOFT_HELM_REPO,
-						Namespace: uCluster.Namespace,
-					},
-				},
-			},
-			ReleaseName: helmReleaseName,
-			Values:      &helmValuesJSONObj,
-		},
-	}
+	newHelmRelease := r.newHelmRelease(uCluster, helmValuesJSONObj, helmReleaseName, uCluster.Spec.Distro)
 
 	if err := controllerutil.SetControllerReference(uCluster, newHelmRelease, r.Scheme); err != nil {
 		return nil, errors.Wrap(err, "failed to set controller reference")
@@ -95,11 +70,16 @@ func (r *UffizziClusterReconciler) upsertVClusterK3SHelmRelease(update bool, ctx
 	return newHelmRelease, nil
 }
 
-func (r *UffizziClusterReconciler) upsertVClusterK8sHelmRelease(update bool, ctx context.Context, uCluster *uclusteruffizzicomv1alpha1.UffizziCluster) (*fluxhelmv2beta1.HelmRelease, error) {
-	vclusterK8sHelmValues, helmReleaseName := vcluster.BuildK8SHelmValues(uCluster)
-	helmValuesJSONObj, err := build.HelmValuesToJSON(vclusterK8sHelmValues)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal helm values")
+func (r *UffizziClusterReconciler) newHelmRelease(uCluster *uclusteruffizzicomv1alpha1.UffizziCluster, helmValuesJSONObj v1.JSON, helmReleaseName string, vclusterDistro string) *fluxhelmv2beta1.HelmRelease {
+	chartName := constants.VCLUSTER_CHART_K3S
+	chartVersion := constants.VCLUSTER_CHART_K3S_VERSION
+
+	if vclusterDistro == constants.VCLUSTER_K8S_DISTRO {
+		chartName = constants.VCLUSTER_CHART_K8S
+		chartVersion = constants.VCLUSTER_CHART_K8S_VERSION
+	} else if vclusterDistro == constants.VCLUSTER_EKS_DISTRO {
+		chartName = constants.VCLUSTER_CHART_EKS
+		chartVersion = constants.VCLUSTER_CHART_EKS_VERSION
 	}
 
 	// Create a new HelmRelease
@@ -117,8 +97,8 @@ func (r *UffizziClusterReconciler) upsertVClusterK8sHelmRelease(update bool, ctx
 			},
 			Chart: fluxhelmv2beta1.HelmChartTemplate{
 				Spec: fluxhelmv2beta1.HelmChartTemplateSpec{
-					Chart:   constants.VCLUSTER_CHART_K8S,
-					Version: constants.VCLUSTER_CHART_K8S_VERSION,
+					Chart:   chartName,
+					Version: chartVersion,
 					SourceRef: fluxhelmv2beta1.CrossNamespaceObjectReference{
 						Kind:      "HelmRepository",
 						Name:      constants.LOFT_HELM_REPO,
@@ -131,37 +111,7 @@ func (r *UffizziClusterReconciler) upsertVClusterK8sHelmRelease(update bool, ctx
 		},
 	}
 
-	if err := controllerutil.SetControllerReference(uCluster, newHelmRelease, r.Scheme); err != nil {
-		return nil, errors.Wrap(err, "failed to set controller reference")
-	}
-	// get the helm release spec in string
-	newHelmReleaseSpecBytes, err := json.Marshal(newHelmRelease.Spec)
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to marshal current spec")
-	}
-	newHelmReleaseSpec := string(newHelmReleaseSpecBytes)
-	// upsert
-	if !update && uCluster.Status.LastAppliedHelmReleaseSpec == nil {
-		if err := r.Create(ctx, newHelmRelease); err != nil {
-			return nil, errors.Wrap(err, "failed to create HelmRelease")
-		}
-		patch := client.MergeFrom(uCluster.DeepCopy())
-		uCluster.Status.LastAppliedHelmReleaseSpec = &newHelmReleaseSpec
-		if err := r.Status().Patch(ctx, uCluster, patch); err != nil {
-			return nil, errors.Wrap(err, "Failed to update the default UffizziCluster lastAppliedHelmReleaseSpec")
-		}
-
-	} else if uCluster.Status.LastAppliedHelmReleaseSpec != nil {
-		// create helm release if there is no existing helm release to update
-		if update && *uCluster.Status.LastAppliedHelmReleaseSpec != newHelmReleaseSpec {
-			if err := r.updateHelmRelease(newHelmRelease, uCluster, ctx); err != nil {
-				return nil, errors.Wrap(err, "failed to update HelmRelease")
-			}
-			return nil, errors.Wrap(err, "couldn't update HelmRelease as LastAppliedHelmReleaseSpec does not exist on resource")
-		}
-	}
-
-	return newHelmRelease, nil
+	return newHelmRelease
 }
 
 func (r *UffizziClusterReconciler) updateHelmRelease(newHelmRelease *fluxhelmv2beta1.HelmRelease, uCluster *uclusteruffizzicomv1alpha1.UffizziCluster, ctx context.Context) error {

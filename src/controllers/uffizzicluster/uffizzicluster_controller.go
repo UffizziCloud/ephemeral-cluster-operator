@@ -231,16 +231,9 @@ func (r *UffizziClusterReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	var updatedHelmRelease *fluxhelmv2beta1.HelmRelease
 	if lifecycleOpType == constants.LIFECYCLE_OP_TYPE_UPDATE {
 		if currentSpec != lastAppliedSpec {
-			if uCluster.Spec.Distro == constants.VCLUSTER_K8S_DISTRO {
-				if updatedHelmRelease, err = r.upsertVClusterK8sHelmRelease(true, ctx, uCluster); err != nil {
-					logger.Error(err, "Failed to update HelmRelease")
-					return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 5}, err
-				}
-			} else {
-				if updatedHelmRelease, err = r.upsertVClusterK3SHelmRelease(true, ctx, uCluster); err != nil {
-					logger.Info("Failed to update HelmRelease with error, reconciling", "Error", err.Error())
-					return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 5}, err
-				}
+			if updatedHelmRelease, err = r.upsertVClusterHelmRelease(true, ctx, uCluster); err != nil {
+				logger.Error(err, "Failed to update HelmRelease")
+				return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 5}, err
 			}
 		}
 	}
@@ -266,19 +259,10 @@ func (r *UffizziClusterReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 func (r *UffizziClusterReconciler) createVClusterHelmChart(ctx context.Context, uCluster *v1alpha1.UffizziCluster, newHelmRelease *fluxhelmv2beta1.HelmRelease) (*fluxhelmv2beta1.HelmRelease, ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	var err error = nil
-	if uCluster.Spec.Distro == constants.VCLUSTER_K8S_DISTRO {
-		newHelmRelease, err = r.upsertVClusterK8sHelmRelease(false, ctx, uCluster)
-		if err != nil {
-			logger.Error(err, "Failed to create HelmRelease")
-			return nil, ctrl.Result{Requeue: true}, err
-		}
-	} else {
-		// default to k3s
-		newHelmRelease, err = r.upsertVClusterK3SHelmRelease(false, ctx, uCluster)
-		if err != nil {
-			logger.Error(err, "Failed to create HelmRelease")
-			return nil, ctrl.Result{Requeue: true}, err
-		}
+	newHelmRelease, err = r.upsertVClusterHelmRelease(false, ctx, uCluster)
+	if err != nil {
+		logger.Error(err, "Failed to create HelmRelease")
+		return nil, ctrl.Result{Requeue: true}, err
 	}
 	return newHelmRelease, ctrl.Result{}, nil
 }
